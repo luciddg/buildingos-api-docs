@@ -1,181 +1,259 @@
 FORMAT: 1A
-HOST: http://polls.apiblueprint.org/
 
 # BuildingOS API
 
-Polls is a simple API allowing consumers to view polls and vote in them.
+We anticipate our API will be used by the following people: 
+- Developers to build apps used by BuildingOS customers
+- Customers who want access to their raw data
+- Students who are part of school energy competitions
 
-# Polls API Root [/]
+If you interested in large amounts (GBs) of anonymous data for research or simulation purposes. Please contact us at <insert-email-here>. 
+We can provide access to large datasets but not through this API. 
 
-This resource does not have any attributes. Instead it offers the initial
-API affordances in the form of the links in the JSON body.
+# Getting access 
+Access to the API will require an authorization token. Authorization is handled using the OAuth2.0 standard. To generate an authorization token you will need to first register an OAuth Client within BuildingOS. You will then need to use this OAuth client details to generate an authorization token using the standard 3-legged OAuth handshake. See <oauth_2_spec_url> for more details.
 
-It is recommend to follow the “url” link values,
-[Link](https://tools.ietf.org/html/rfc5988) or Location headers where
-applicable to retrieve resources. Instead of constructing your own URLs,
-to keep your client decoupled from implementation details.
+## NOTE: All API requests must be over HTTPS
 
-## Retrieve the Entry Point [GET]
+## Access requests and registering API clients
 
-+ Response 200 (application/json)
+For OAuth2.0 client access:
 
-        {
-            "questions_url": "/questions"
+In order to make requests on behalf of a user, the client needs to be authorized by the user. All clients must use OAuth2.0 to connect with BOS on behalf of a BOS user. To register a new client, login to BOS and navigate to the API app. In this area of BuildingOS you will be able to view/update/delete API clients. You can create as many clients as you like. We recommend you create at least two, one for "production" and one for "development". You will need to name the client, provide a description and contact email. These will be presented to the user during the authorization flow. Once created, the BOS system will generate a clientID and secret to use during your applications authorization process.
+
+## Authorization Token Expiration
+A user's authorization token key has a very long lifetime. The default is one year. A user's authorization token can be revoked either by the user or a system administrator. A client consuming the API would need to be prepared to support the use case of an authorization token expiring or being revoked. It should handle re-requesting access. 
+
+# Versions
+Versions will be handled with headers. Currently there is only one version, this beta version. 
+
+# Response Object Format
+All objects returned from the API are in a data envelope. This means the object resource is not returned as the root of the json response object but rather, the object is wrapped in an enclosing object. This allows us to make changes to the response object to add additional meta data (if needed) as the API evolves. For most requests the response object will have these three attributes. Most singular resource requests (e.g. /meters/XYZ) will just have the 'data' attribute. Most collection requests will have 'data', 'links', and 'total_count'. (Note: `error` responses are different. See below for details...)
+
+The possible object attributes are: 
+
+`data` - Contains the JSON serialized object or an array of objects.
+
+`links` -  Contains pagination support (when appropriate, when not appropriate the "links" attribute should be present but an empty object can be returned).
+
+`total_count` - the total database count of all the objects of this type that match the params in the request but (in the case of pagination) may not be returned. Note: filters may affect the total_count.
+
+`meta` - Information on the model object attributes for controlled vocabularies and support for object creation/validation. 
+
+`errors` - (present only on certain request types) Returns a list of errors and the id/name/id.name of the associated object/object attributes 
+
+# Formatting
+For all compound url components and attributes will use "sake_case". For example "pending_notifications", "user_id", etc... You will not see attribute names like "pendingNotifications" or "user-id"
+
+# Dates/Times/Timestamps 
+All datetime or timestamps will be be returned as a string in UTC in RFC 3339 format (e.g. `'2012-04-23T18:25:43.511Z'`). For attributes that are a timestamp they will follow the convention of ending with `_at`. If there is a attribute that returns a date with no time component it will end in `_on`, be in this format `YYYY-MM-DD` and be the UTC adjusted Date equivalent of `2014-11-23T00:00:0.0Z`. In addition, if the object has a calculated local time this will be returned with the ending `_local`. For example, a Building has location and inherits the timezone of the area where it is located. If you request information on one of the meters in this building to find out the time of its last successful reading it will have two timestamps for this value. One timestamp, `last_reading_at` will be in UTC and `last_reading_local` will be the timestamp in the local timezone. If the building was located in the PST timezone and the `last_reading_at` value is `'2014-12-03T18:53:24Z'` and the `last_reading_local` will be `'2014-12-03T18:53:24-08:00'`.
+
+[ref: https://tools.ietf.org/html/rfc3339]
+
+# Sorting - NOT IMPLEMENTED
+Certain API endpoints support sorting. This is the parameters they expect to sort the returned data
+- `sort` - String based attribute keys e.g. "sort=created_at" or "sort=name,updated_at" (default = 'id')
+- `order` - String value 'asc' or 'desc' (default = 'desc')
+
+# Pagination 
+Certain API endpoints support pagination. We will only return the default record count if you do not specify a per_page. Note: There is a hard API per_page at 1,000 records or requests that take longer than 30 seconds to respond. Due to technical per_pageations any API request which hit these per_pages (whichever is first) will be terminated and returned with an error.
+- `per_page` - Number of results to return (default = 100)
+- `page` - Number to start returning results (default = 0)
+`Note: on endpoints where the data set is larger than the record per_pages then inside the data payload will be a "links" attribute. This is here for client convenience. The "links" attribute will contain a "previous" attribute, and a "next" attribute. These will both be links to paginate through the data set. In addition, there will be an attribute called "total_count" in the top level payload. This contains the number of total records available.
+
+```
+{   
+    ...
+    "links" {
+        "next": "https://api.buildingos.com/users/notifications?per_page=2&page=2",
+        "previous": "https://api.buildingos.com/users/notifications?per_page=2&page=0"
+    },
+    "total_count": 200
+}
+
+```
+# Definitions 
+Many of the BuildingOS API endpoints return objects that contain attributes from our controlled vocabulary. The controlled vocabulary allows us to restrict the values of certain attributes to known-good types. These are typically the type of lists of controlled vocabulary used in dropdowns or multiselect UI elements. The `/meters` endpoint has several attributes that use a controlled vocabulary. One example of this is the 'reading_type' attribute. For this attribute you can only select known types of readings such as "Electricity", "Wind Speed", "Heating", "Cooling", etc... In the attribute for the object, the value returned will be the "slug" (a url compatible version) of the `reading_type`. Other values that could be used for the 'reading_type' are defined in the 'meta' section of the object payload under 'definitions'. The field name of the object, in this case 'reading_type', will be listed out. Following the url in the attribute value will return a list of the possible 'reading_type' objects.
+
+```
+ "meta": {
+        "definitions": {
+            "status": "https://api.buildingos.com/definitions/meters_status", 
+            "source_units": "https://api.buildingos.com/definitions/meters_source_unit", 
+            "reading_type": "https://api.buildingos.com/definitions/meters_reading_type", 
+            "default_timescale": "https://api.buildingos.com/definitions/meters_default_timescale", 
+            "display_units": "https://api.buildingos.com/definitions/meters_display_unit", 
+            "scope": "https://api.buildingos.com/definitions/meters_scope"
         }
+  }
 
-## Group Question
+```
 
-Resources related to questions in the API.
+An object controlled vocabulary definition object has the following construction:
+```
+  {
+      "id": "1", 
+      "displayName": "Electricity", 
+      "slug": "electricity", 
+      "optgroup": "Primary Resources", 
+      "zeroUseMessage": "No electricity has been consumed during this period", 
+      "avatar": "electricity.png", 
+      "swf": "ico_electricity", 
+      "icon": "bolt orange"
+  }, 
 
-## Question [/questions/{question_id}]
+```
 
-A Question object has the following attributes:
 
-+ question
-+ published_at - An ISO8601 date when the question was published.
-+ url
-+ choices - An array of Choice objects.
+# Filtering - NOT IMPLEMENTED YET
+Certain API endpoints support filtering. To filter returned objects use the following params
+- `filter` - String attribute name, e.g. "filter=building_group" (default = NONE)
+- `value` - String filter value to use, e.g. "value=laboratory" (default = NONE)
+Filtering is not the same as searching. Filtering is on whole term matches only. Using the example above, since there is a building_group called 'laboratory' then you can use that term as a filter. You would not be able to filter by "lab" and expect to see "lab" and "laboratory" returned as building results. Filtering options are available on only certain endpoints. Those endpoints are noted in the documentation below. 
 
-+ Parameters
-    + question_id: 1 (required, number) - ID of the Question in form of an integer
+# Expanded Objects - NOT IMPLEMENTED YET
+Certain API endpoints support the ability to expand the nested objects they contain. The default is to return only partial objects or just the object ID. 
+- `expand` - String attribute list to include the full object. Comma separated names to include the returned object array. e.g. `expand=true` (default = false)
+For example, to include the full expanded objects of an organization you would make the following request. In this case only `buildings` can be expanded. Note that inside the expanded buildings objects are meters, these meter objects will not be expanded. For performance reasons expansion only goes one object layer deep. To get meter details use the `/meters` API endpoint. Expansion of objects is only for convenience and not meant to be used for to replace endpoints in the API. 
 
-### View a Questions Detail [GET]
+`GET /organization/23?expand=true`
 
-+ Response 200 (application/json)
+This would return:
+```
+TODO
 
-        {
-            "question": "Favourite programming language?",
-            "published_at": "2014-11-11T08:40:51.620Z",
-            "url": "/questions/1",
-            "choices": [
-                {
-                    "choice": "Swift",
-                    "url": "/questions/1/choices/1",
-                    "votes": 2048
-                }, {
-                    "choice": "Python",
-                    "url": "/questions/1/choices/2",
-                    "votes": 1024
-                }, {
-                    "choice": "Objective-C",
-                    "url": "/questions/1/choices/3",
-                    "votes": 512
-                }, {
-                    "choice": "Ruby",
-                    "url": "/questions/1/choices/4",
-                    "votes": 256
-                }
-            ]
-        }
+```
 
-## Choice [/questions/{question_id}/choices/{choice_id}]
+# Expected Responses 
+We expect that most of our endpoints will return the following responses in these general cases
+- `GET` returns a 200, 204, or 206
+- `HEAD` returns a 205
+- `POST` returns 201 or 202
+- `PUT` returns 202 or 204
+- `DELETE` returns a 202 or 204
 
-+ Parameters
-    + question_id: 1 (required, number) - ID of the Question in form of an integer
-    + choice_id: 1 (required, number) - ID of the Choice in form of an integer
+# HTTP Response Codes
 
-### Vote on a Choice [POST]
+- `200` - OK - Everything is working
+- `201` - OK - New resource has been created
+- `202` - OK - Accepted for processing but processing not completed (for async processes such as report generation or data export requests)
+- `204` - OK - The resource was successfully deleted
+- `206` - OK - The resource was partially updated 
+- `304` - Not Modified - The client can use cached data
 
-This action allows you to vote on a question's choice.
+- `400` - Bad Request - The request was invalid or cannot be served. The exact error should be explained in the error payload. E.g. "The JSON is not valid"
+- `401` - Unauthorized - The request requires an user authentication
+- `403` - Forbidden - The server understood the request, but is refusing it or the access is not allowed.
+- `404` - Not found - There is no resource behind the URI.
+- `422` - Unprocessable Entity - Should be used if the server cannot process the entity, e.g. if an image cannot be formatted or mandatory fields are missing in the payload.
 
-+ Response 201
+- `500` - Internal Server Error - Something went really wrong. We will be auto-notified of the error and will look into it.
 
-    + Headers
+# Error response format
+Requests which result in errors will return a response object that has details about the error along with the proper HTTP status code.
+```
+{
+  "data": { Data object that user submitted to API. Only for PUT/POSTs or when relevant. },
+  "errors": [
+   {
+    "source": "<source of the error>",
+    "attribute": "<optional, used for field validation errors",
+    "message": "<user facing message>",
+   }, 
+   {
+    "source": "<source of the error>",
+    "attribute": "<optional, used for field validation errors",
+    "message": "<user facing message>",
+   },
+   ...
+  ]
+}
+```
 
-            Location: /questions/1
+The "errors" data object is an array. In the array it will contain objects that define the error and the source of the error.
+For example, if the user makes a request for a resource that they do not have access to the object the following error message will be returned along with the standard HTTP 403 status code.
+```
+{
+  "errors": [
+   {
+    "source": "request",
+    "message": "Sorry, you do not have access to that object",
+   }
+  ]
+}
+```
 
-## Questions Collection [/questions{?page}]
+If the user tries to create an object but validation fails on certain fields the error response object will look like this:
+```
+{ 
+  "data": { ...the object posted... },
+  "errors": [
+   {
+    "source": "building",
+    "attribute": "name",
+    "message": "Sorry, building name is required.",
+   },
+   {
+    "source": "building",
+    "attribute": "slug",
+    "message": "Sorry, building slug can only contain letters, number, '-', or '_'",
+   }
+  ]
+}
+```
+If multiple objects are create/updated at once then the error objects will... TODO
 
-+ Parameters
-    + page: 1 (optional, number) - The page of questions to return
 
-### List All Questions [GET]
+# On Nulls or Empty lists
+Sometimes it is confusing what types of things to return when data is missing or not applicable. Here's our convention for returning empty things and nulls (based on this https://jtechies.blogspot.nl/2012/07/item-43-return-empty-arrays-or.html)
 
-+ Response 200 (application/json)
+|       Should be        | When empty |
+|------------------------|------------|
+| Array of things        | []         |
+| Object with properties | {}         |
+| String                 | null or "" | 
+| Number                 | null       |
+|                        |            |
 
-    + Headers
+Some examples...
+For an organization with no Buildings, normally an array of building ID strings.
+```
+   ...
+   "buildings": [],
+   ...
+```
 
-            Link: </questions?page=2>; rel="next"
+For a building with no GeoLocation, normally an object with "location": {"lat": 34.020576, "lon": -118.398035} 
+```
+   ...
+   "location": {},
+   ...
+```
 
-    + Body
+Note, sometimes for user entered fields like names, descriptions, etc... expect that values could be null or ""
 
-            [
-                {
-                    "question": "Favourite programming language?",
-                    "published_at": "2014-11-11T08:40:51.620Z",
-                    "url": "/questions/1",
-                    "choices": [
-                        {
-                            "choice": "Swift",
-                            "url": "/questions/1/choices/1",
-                            "votes": 2048
-                        }, {
-                            "choice": "Python",
-                            "url": "/questions/1/choices/2",
-                            "votes": 1024
-                        }, {
-                            "choice": "Objective-C",
-                            "url": "/questions/1/choices/3",
-                            "votes": 512
-                        }, {
-                            "choice": "Ruby",
-                            "url": "/questions/1/choices/4",
-                            "votes": 256
-                        }
-                    ]
-                }
-            ]
 
-### Create a New Question [POST]
+# Licensing 
+Building OS is a licensed product. This means that there will be certain actions you try to perform through the API that will not succeed because your license does not support that action. Depending on your license you may receive an error when you try to create a new building that is beyond the number of buildings you are licensed to have in your account. You may also receive an error when trying to create a contest, or view the contests in your account. To be clear, you do not need a separate license to use the API. Any aspect of Building OS that you pay for which has an API will be accessible. However, your code or client should be able to handle requests that result in a licensing error. These types of errors look like the following: 
 
-You may create your own question using this action. It takes a JSON
-object containing a question and a collection of answers in the
-form of choices.
+```
+{
+  "errors": [
+   {
+    "source": "license",
+    "message": "Sorry, you do not have the proper license to make this request.",
+   }
+  ]
+}
 
-+ question (string) - The question
-+ choices (array[string]) - A collection of choices.
+```
+Note: You will likely see these types of licensing errors when you create more buildings/meters than you are allowed, or try to create resources in unlicensed areas of the product.
 
-+ Request (application/json)
+# Misc
 
-        {
-            "question": "Favourite programming language?",
-            "choices": [
-                "Swift",
-                "Python",
-                "Objective-C",
-                "Ruby"
-            ]
-        }
-
-+ Response 201 (application/json)
-
-    + Headers
-
-            Location: /questions/2
-
-    + Body
-
-            {
-                "question": "Favourite programming language?",
-                "published_at": "2014-11-11T08:40:51.620Z",
-                "url": "/questions/2",
-                "choices": [
-                    {
-                        "choice": "Swift",
-                        "url": "/questions/2/choices/1",
-                        "votes": 0
-                    }, {
-                        "choice": "Python",
-                        "url": "/questions/2/choices/2",
-                        "votes": 0
-                    }, {
-                        "choice": "Objective-C",
-                        "url": "/questions/2/choices/3",
-                        "votes": 0
-                    }, {
-                        "choice": "Ruby",
-                        "url": "/questions/2/choices/4",
-                        "votes": 0
-                    }
-                ]
-            }
+## Sources of Inspiration
+https://jsonapi.org/format/
+https://github.com/apiaryio/api-blueprint/blob/master/examples/Real%20World%20API.md
+https://www.vinaysahni.com/best-practices-for-a-pragmatic-restful-api
+https://stateless.co/hal_specification.html
+https://stackoverflow.com/questions/10286204/the-right-json-date-format
