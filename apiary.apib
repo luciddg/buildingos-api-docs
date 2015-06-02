@@ -22,10 +22,7 @@ For OAuth2.0 client access:
 In order to make requests on behalf of a user, the client needs to be authorized by the user. All clients must use OAuth2.0 to connect with BOS on behalf of a BOS user. To register a new client, login to BOS and navigate to the API app. In this area of BuildingOS you will be able to view/update/delete API clients. You can create as many clients as you like. We recommend you create at least two, one for "production" and one for "development". You will need to name the client, provide a description and contact email. These will be presented to the user during the authorization flow. Once created, the BOS system will generate a clientID and secret to use during your applications authorization process.
 
 ## Authorization Token Expiration
-A user's authorization token key has a very long lifetime. The default is one year. A user's authorization token can be revoked either by the user or a system administrator. A client consuming the API would need to be prepared to support the use case of an authorization token expiring or being revoked. It should handle re-requesting access. 
-
-# Versions
-Versions will be handled with headers. Currently there is only one version, this beta version. 
+A user's authorization token key has a short lifetime. Each token only lasts one hour. A user's authorization token can be revoked either by the user or a system administrator. A client consuming the API would need to be prepared to support the use case of an authorization token expiring or being revoked. It should handle re-requesting access using the refresh token provided along side the access token.
 
 # Response Object Format
 All objects returned from the API are in a data envelope. This means the object resource is not returned as the root of the json response object but rather, the object is wrapped in an enclosing object. This allows us to make changes to the response object to add additional meta data (if needed) as the API evolves. For most requests the response object will have these three attributes. Most singular resource requests (e.g. /meters/XYZ) will just have the 'data' attribute. Most collection requests will have 'data', 'links', and 'total_count'. (Note: `error` responses are different. See below for details...)
@@ -40,8 +37,6 @@ The possible object attributes are:
 
 `meta` - Information on the model object attributes for controlled vocabularies and support for object creation/validation. 
 
-`errors` - (present only on certain request types) Returns a list of errors and the id/name/id.name of the associated object/object attributes 
-
 # Formatting
 For all compound url components and attributes will use "sake_case". For example "pending_notifications", "user_id", etc... You will not see attribute names like "pendingNotifications" or "user-id"
 
@@ -50,16 +45,16 @@ All datetime or timestamps will be be returned as a string in UTC in RFC 3339 fo
 
 [ref: https://tools.ietf.org/html/rfc3339]
 
-# Sorting - NOT IMPLEMENTED
-Certain API endpoints support sorting. This is the parameters they expect to sort the returned data
-- `sort` - String based attribute keys e.g. "sort=created_at" or "sort=name,updated_at" (default = 'id')
-- `order` - String value 'asc' or 'desc' (default = 'desc')
-
 # Pagination 
-Certain API endpoints support pagination. We will only return the default record count if you do not specify a per_page. Note: There is a hard API per_page at 1,000 records or requests that take longer than 30 seconds to respond. Due to technical per_pageations any API request which hit these per_pages (whichever is first) will be terminated and returned with an error.
+Certain API endpoints support pagination. We will only return the default record count if you do not specify a per_page. Note: There is a hard API per_page at 100 records. We paginate slightly differently depending on the characteristics of the data being requested. For resource objects like buildings we use the standard, known quantity pagination. For time based data like meter readings, we use time-based pagination. 
+
+
+## Known quantity pagination
+
+For objects where we can easily count like users, buildings, meters, etc... We use the following pagination scheme. In the request URL pass in the attributes below:
 - `per_page` - Number of results to return (default = 100)
 - `page` - Number to start returning results (default = 0)
-`Note: on endpoints where the data set is larger than the record per_pages then inside the data payload will be a "links" attribute. This is here for client convenience. The "links" attribute will contain a "previous" attribute, and a "next" attribute. These will both be links to paginate through the data set. In addition, there will be an attribute called "total_count" in the top level payload. This contains the number of total records available.
+`Note: on endpoints where the data set is larger than the record per_pages then inside the data payload will be a "links" attribute. This is here for client convenience. The "links" attribute will contain a "previous" attribute, and a "next" attribute. These will both be links to paginate through the data set. In addition, there will be an attribute called "total_count" in the top level payload. This contains the number of total records available. When you have reached the end or beginning of the data set one or both of the "previous" and "next" links may be null. `
 
 ```
 {   
@@ -72,6 +67,26 @@ Certain API endpoints support pagination. We will only return the default record
 }
 
 ```
+
+## Time-based pagination
+For data that is timebased readings we have a slightly different way to paginate. Since these data values have an explicit order we provide the ability to page through using "sliding windows". Since it is not possible to get an accurate count of the number of data values we do not provide a "total_count".
+- `start` - The timestamp where you would like the data to start (RFC 3339 format).
+- `end` - The timestamp where you want the data to end (RFC 3339 format).
+- `order` - The order of the returned data `asc` or `desc` (default is `asc`)
+- `per_page` - The number of items to return in the page
+
+```
+{   
+    ...
+    "links" {
+        "next": "https://api.buildingos.com/meters/<meter_id>/data?resolution=day&start=2015-03-01&end=2015-04-01",
+        "previous": "https://api.buildingos.com/meters/<meter_id>/data?resolution=day&start=2015-01-01&end=2015-02-01"
+    }
+}
+
+```
+
+
 # Definitions 
 Many of the BuildingOS API endpoints return objects that contain attributes from our controlled vocabulary. The controlled vocabulary allows us to restrict the values of certain attributes to known-good types. These are typically the type of lists of controlled vocabulary used in dropdowns or multiselect UI elements. The `/meters` endpoint has several attributes that use a controlled vocabulary. One example of this is the 'reading_type' attribute. For this attribute you can only select known types of readings such as "Electricity", "Wind Speed", "Heating", "Cooling", etc... In the attribute for the object, the value returned will be the "slug" (a url compatible version) of the `reading_type`. Other values that could be used for the 'reading_type' are defined in the 'meta' section of the object payload under 'definitions'. The field name of the object, in this case 'reading_type', will be listed out. Following the url in the attribute value will return a list of the possible 'reading_type' objects.
 
@@ -104,33 +119,16 @@ An object controlled vocabulary definition object has the following construction
 
 ```
 
-
-# Filtering - NOT IMPLEMENTED YET
-Certain API endpoints support filtering. To filter returned objects use the following params
-- `filter` - String attribute name, e.g. "filter=building_group" (default = NONE)
-- `value` - String filter value to use, e.g. "value=laboratory" (default = NONE)
-Filtering is not the same as searching. Filtering is on whole term matches only. Using the example above, since there is a building_group called 'laboratory' then you can use that term as a filter. You would not be able to filter by "lab" and expect to see "lab" and "laboratory" returned as building results. Filtering options are available on only certain endpoints. Those endpoints are noted in the documentation below. 
-
-# Expanded Objects - NOT IMPLEMENTED YET
-Certain API endpoints support the ability to expand the nested objects they contain. The default is to return only partial objects or just the object ID. 
-- `expand` - String attribute list to include the full object. Comma separated names to include the returned object array. e.g. `expand=true` (default = false)
-For example, to include the full expanded objects of an organization you would make the following request. In this case only `buildings` can be expanded. Note that inside the expanded buildings objects are meters, these meter objects will not be expanded. For performance reasons expansion only goes one object layer deep. To get meter details use the `/meters` API endpoint. Expansion of objects is only for convenience and not meant to be used for to replace endpoints in the API. 
-
-`GET /organization/23?expand=true`
-
-This would return:
-```
-TODO
-
-```
-
 # Expected Responses 
 We expect that most of our endpoints will return the following responses in these general cases
-- `GET` returns a 200, 204, or 206
+- `GET` returns a 200, 204, or 206.
 - `HEAD` returns a 205
-- `POST` returns 201 or 202
-- `PUT` returns 202 or 204
-- `DELETE` returns a 202 or 204
+
+Note: For some GET requests you may receive a 301. This will happen if you do not append a trailing slash to the end of your URLs.  To ensure your client code more robust make sure the HTTP client you use is capable of following redirects and that you have that flag/option enabled. For example, when using curl from the command line you should use the `-L` option. 
+```
+curl -v -X GET -L -H "Authorization: Bearer <ACCESS_TOKEN>" https://api.buildingos.com/buildings
+```
+
 
 # HTTP Response Codes
 
@@ -139,6 +137,8 @@ We expect that most of our endpoints will return the following responses in thes
 - `202` - OK - Accepted for processing but processing not completed (for async processes such as report generation or data export requests)
 - `204` - OK - The resource was successfully deleted
 - `206` - OK - The resource was partially updated 
+
+- `301` - Permanent Redirect - The resource has moved permanently 
 - `304` - Not Modified - The client can use cached data
 
 - `400` - Bad Request - The request was invalid or cannot be served. The exact error should be explained in the error payload. E.g. "The JSON is not valid"
@@ -148,61 +148,6 @@ We expect that most of our endpoints will return the following responses in thes
 - `422` - Unprocessable Entity - Should be used if the server cannot process the entity, e.g. if an image cannot be formatted or mandatory fields are missing in the payload.
 
 - `500` - Internal Server Error - Something went really wrong. We will be auto-notified of the error and will look into it.
-
-# Error response format
-Requests which result in errors will return a response object that has details about the error along with the proper HTTP status code.
-```
-{
-  "data": { Data object that user submitted to API. Only for PUT/POSTs or when relevant. },
-  "errors": [
-   {
-    "source": "<source of the error>",
-    "attribute": "<optional, used for field validation errors",
-    "message": "<user facing message>",
-   }, 
-   {
-    "source": "<source of the error>",
-    "attribute": "<optional, used for field validation errors",
-    "message": "<user facing message>",
-   },
-   ...
-  ]
-}
-```
-
-The "errors" data object is an array. In the array it will contain objects that define the error and the source of the error.
-For example, if the user makes a request for a resource that they do not have access to the object the following error message will be returned along with the standard HTTP 403 status code.
-```
-{
-  "errors": [
-   {
-    "source": "request",
-    "message": "Sorry, you do not have access to that object",
-   }
-  ]
-}
-```
-
-If the user tries to create an object but validation fails on certain fields the error response object will look like this:
-```
-{ 
-  "data": { ...the object posted... },
-  "errors": [
-   {
-    "source": "building",
-    "attribute": "name",
-    "message": "Sorry, building name is required.",
-   },
-   {
-    "source": "building",
-    "attribute": "slug",
-    "message": "Sorry, building slug can only contain letters, number, '-', or '_'",
-   }
-  ]
-}
-```
-If multiple objects are create/updated at once then the error objects will... TODO
-
 
 # On Nulls or Empty lists
 Sometimes it is confusing what types of things to return when data is missing or not applicable. Here's our convention for returning empty things and nulls (based on this https://jtechies.blogspot.nl/2012/07/item-43-return-empty-arrays-or.html)
@@ -229,25 +174,7 @@ For a building with no GeoLocation, normally an object with "location": {"lat": 
    "location": {},
    ...
 ```
-
-Note, sometimes for user entered fields like names, descriptions, etc... expect that values could be null or ""
-
-
-# Licensing 
-Building OS is a licensed product. This means that there will be certain actions you try to perform through the API that will not succeed because your license does not support that action. Depending on your license you may receive an error when you try to create a new building that is beyond the number of buildings you are licensed to have in your account. You may also receive an error when trying to create a contest, or view the contests in your account. To be clear, you do not need a separate license to use the API. Any aspect of Building OS that you pay for which has an API will be accessible. However, your code or client should be able to handle requests that result in a licensing error. These types of errors look like the following: 
-
-```
-{
-  "errors": [
-   {
-    "source": "license",
-    "message": "Sorry, you do not have the proper license to make this request.",
-   }
-  ]
-}
-
-```
-Note: You will likely see these types of licensing errors when you create more buildings/meters than you are allowed, or try to create resources in unlicensed areas of the product.
+Note: sometimes for user entered fields like names, descriptions, etc... expect that values could be null or ""
 
 # Misc
 
