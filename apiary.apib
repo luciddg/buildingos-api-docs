@@ -181,3 +181,1183 @@ https://github.com/apiaryio/api-blueprint/blob/master/examples/Real%20World%20AP
 https://www.vinaysahni.com/best-practices-for-a-pragmatic-restful-api
 https://stateless.co/hal_specification.html
 https://stackoverflow.com/questions/10286204/the-right-json-date-format
+
+# Group Root
+Details on all the endpoints available for you to access
+
+## Root [/]
+### Get the API endpoints available
++ Request (application/json)
+ 
+    + Header
+    
+            Authorization: Bearer <user_auth_token>
+            
+            
++ Response 200 (application/json)
+
+    + Body
+    
+            {
+                "data": {
+                    "me": "https://api.buildingos.com/me",
+                    "organizations": "https://api.buildingos.com/organizations",
+                    "buildings": "https://api.buildingos.com/buildings",
+                    "meters": "https://api.buildingos.com/meters",
+                    "users": "https://api.buildingos.com/users",
+                    "notifications": "https://api.buildingos.com/notifications",
+                    "definitions": "https://api.buildingos.com/definitions",
+                    "organization_url": "https://api.buildingos.com/organizations/1"
+                }
+            }
+
+# Group Current User
+Details on the current user. This is the information available on the user account tied to the access token used for this request.
+
+## Me [/me]
+### Get the user object and details on the auth token expiration [GET]
++ Request (application/json)
+
+    + Header
+            
+            Authorization: Bearer <user_auth_token>
+            
++ Response 200 (application/json)
+
+    + Body
+    
+            {
+                "data": {
+                    "id": "9554",
+                    "name": "Barny Smith",
+                    "email": "bsmith@customer.com",
+                    "job_function": "Architect",
+                    "organizations": "https://api.buildingos.com/organizations",
+                    "url": "https://api.buildingos.com/users/321412",
+                    "avatar": "https://buildingos.com/images/profileavatar/321/avatar/a61885bf-7dd4-4ecd.jpg",
+                    "created_at": "2014-08-28T22:45:30+00:00",
+                    "last_login_at": "2015-06-02T20:26:06+00:00"
+                }
+            }
+                        
+# Group Users
+A user in BuildingOS. Depending on the users access privileges these endpoints may not be available. 
+
+### Fields
+
+Name                    | Description                                                                                       |  Returns
+----------------------- | ------------------------------------------------------------------------------------------------- | --------
+`id`                    | The db id of the user                                                                             | `string`
+`name`                  | The name of the user                                                                              | `string`
+`email`                 | The users email address                                                                           | `string`
+`job_function`          | The users job function                                                                            | `string`
+`organizations`         | The url to the list of organizations that are relevant for the current user                       | `string`
+`avatar`                | The path to the image resource of the user image avatar                                           | `string`
+`created_at`            | The RFC 3339 timestamp when the user record was created                                           | `string`
+`last_login_at`         | The RFC 3339 timestamp of when the user last logged in to BuildingOS UI                           | `string`
+
+## User List [/users?&per_page={per_page}&page={page}]
+List of users who have accounts under an organization
+    
++ Model (application/json)
+
+    + Body
+    
+            {
+                "total_count": 48,
+                "data": [
+                    {
+                        "id": "16645",
+                        "name": "Peter Piper",
+                        "email": "peter_p@company.com",
+                        "job_function": "Facility Manager",
+                        "organizations": [
+                            "https://api.buildingos.com/organizations/43"
+                        ],
+                        "url": "https://api.buildingos.com/users/16645",
+                        "avatar": "https://buildingos.com/static/default_avatars/profile/avatar.png",
+                        "created_at": "2011-05-20T16:42:11+00:00",
+                        "last_login_at": "2015-01-20T18:14:53+00:00"
+                    },
+                    {
+                        "id": "39565",
+                        "name": "Alice Axela",
+                        "email": "aa@company.com",
+                        "job_function": "Architect",
+                        "organizations": [
+                            "https://api.buildingos.com/organizations/42",
+                            "https://api.buildingos.com/organizations/2412",
+                            "https://api.buildingos.com/organizations/4212",
+                            "https://api.buildingos.com/organizations/221",
+                            "https://api.buildingos.com/organizations/14"
+                        ],
+                        "url": "https://api.buildingos.com/users/39565",
+                        "avatar": "https://buildingos.com/static/default_avatars/profile/avatar.png",
+                        "created_at": "2012-12-18T19:01:26+00:00",
+                        "last_login_at": "2015-06-01T21:29:16+00:00"
+                    }
+                ],
+                "links": {
+                    "previous": null,
+                    "next": "https://api.buildingos.com/users?per_page=2&page=2"
+                }
+            }
+            
+        
+### User List [GET]
+Returns a list of users. Supports the following params:
+
++ Parameters
+    + per_page (optional, number, `10`) ... The number of items to return. Max 100
+    + page (optional, number, `0`) ... The number of records to skip before returning data
+
+    
++ Request (application/json)
+
+    + Headers
+            
+            Authorization: Bearer <user_auth_token>
+            
++ Response 200 
+
+    [User List][]
+
+
+## User [/users/{id}]
+A User object representing a user in BuildingOS. 
+
++ Parameters
+    + id (required, string, `123`) ... `id` of the User.
+
++ Model (application/json)
+
+    + Body
+    
+            {
+                "data": {
+                    "id": "9554",
+                    "name": "Barny Smith",
+                    "email": "bsmith@customer.com",
+                    "job_function": "Architect",
+                    "organizations": "https://api.buildingos.com/organizations",
+                    "url": "https://api.buildingos.com/users/321412",
+                    "avatar": "https://buildingos.com/images/profileavatar/321/avatar/a61885bf-7dd4-4ecd.jpg",
+                    "created_at": "2014-08-28T22:45:30+00:00",
+                    "last_login_at": "2015-06-02T20:26:06+00:00"
+                }
+            }
+            
+            
+### Get a User [GET]
+This should be identical to the `/me` data structurally but can be used to query on multiple users. For security, the user IDs that can be queried are only ones that are in your organization. Clients cannot query for users outside of their organization.
+
++ Request (application/json)
+
+    + Headers
+            
+            Authorization: Bearer <user_auth_token>
+            
++ Response 200 
+
+    [User][]
+    
+# Group Organizations
+Organizations are the top level building hierarchy in BuildingOS
+
+### Fields
+
+Name                    | Description                                                                                       |  Type
+----------------------- | ------------------------------------------------------------------------------------------------- | --------
+`id`                    | The id of the organization                                                                        | `string`
+`name`                  | The `displayName` of the organization                                                             | `string`
+`short_name`            | A shortend version of the name to be used in UI, the `shortName` field                            | `string`
+`slug`                  | The URL component of the organization, used for composing links, the 'urlElement' field           | `string`
+`url`                   | The URL to this resource object                                                                   | `string`
+`type`                  | The object representing the type of the organization (from the type enum)                         | `object`
+`type`.`id`             | -- The `id` of the enum object                                                                    | `string`
+`type`.`name`           | -- The display value, human readable type value                                                   | `string`
+`profile_photo`         | A partial object representing the image resource to use as image                                  | `object`
+`profile_photo`.`id`    | -- The db id of the image resource                                                                | `string'
+`profile_photo`.`url`   | -- The path to the image resource (internal uri or hosted/cdn image url)                          | `string`
+`buildings`             | A list of building ids that are part of this organization                                         | `array`
+`updated_at`            | The ISO 8601 timestamp of `buildings_organizations`.`lastModified` field value                    | `string`
+
+
+## Organization List [/organizations?ids={ids}&per_page={per_page}&page={page}&embed={embed}]
+A user can belong to one or many organizations (usually just their primary organization and the demo organization). This is a collection of all the organizations for which the current user has access. 
+
++ Model (application/json)
+
+    + Body
+
+            {
+                "data": [{
+                    "id": "123",
+                    "name": "Oberlin College",
+                    "short_name": "Oberlin",
+                    "url": "https://api.buildingos.com/organizations/123",
+                    "buildings": [
+                    "21",
+                    "22"
+                    ],
+                    "created_at": "2014-11-23T16:15:33.241Z",
+                    "updated_at": "2014-11-23T16:15:33.241Z"
+                },
+                {
+                    "id": "555",
+                    "name": "Demo College USA",
+                    "short_name": "Demo",
+                    "slug": "demo",
+                    "url": "https://api.buildingos.com/organizations/555",
+                    "type": {
+                       "id": "33",
+                       "name": "Private College/University"
+                    },
+                    "profile_photo": {
+                        "id": "1234",
+                        "url": "https://imagehost.com/image/1234.png"
+                    },
+                    "buildings": ["777","888","999"],
+                    "created_at": "2014-11-23T16:15:33.241Z",
+                    "updated_at": "2014-11-23T16:15:33.241Z"
+                }],
+                "links":{},
+                "total_count": 2
+            }
+
+### Organization List [GET]
+List all the Organizations associated with the current user
+
++ Parameters
+    + ids (optional, string, `12,30,102`) ... `id`s of the Organizations to return. 
+    + per_page (optional, number, `10`) ... The number of items to return
+    + page (optional, number, `0`) ... The number of records to skip before returning data
+    + embed (optional, boolean, `true`) ... To expand the requested object to include embedded objects. In this case, the `buildings` attribute would be expanded to include the full building objects instead of just the building ids.
+
++ Response 200
+
+    [Organization List][]
+
+## Organization  [/organizations/{id}]
+The organization is the top level object that represents some entity.  A school, university, company, or city can all be organizations. Organizations have many users, buildings, meters, and lots of data.
+
++ Parameters
+    + id (required, string, `123`) ... `id` of the Organization.
+
++ Model (application/json)
+
+    + Body
+
+            {
+                "data": {
+                    "id": "123",
+                    "name": "Oberlin College",
+                    "short_name": "Oberlin",
+                    "slug": "orberlin",
+                    "url": "https://api.buildingos.com/organizations/123",
+                    "type": {
+                        "id": "3",
+                        "name": Private College/University",
+                    },
+                    "profile_photo": {
+                        "id": "1234",
+                        "url": "https://imagehost.com/image/1234.png"
+                    },
+                    "buildings": ["21","22"],
+                    "created_at": "2014-11-23T16:15:33.241Z",
+                    "updated_at": "2014-11-23T16:15:33.241Z"
+                }
+            }
+
+
+### Get a Organization [GET]
+Get an organization by ID. Note: requests will be scoped to the current user. Any organization requested outside of the current users organization list will return a 403
+
++ Request (application/json)
+    
+    + Headers
+            
+            Authorization: Bearer <user_auth_token>
+
++ Response 200
+
+    [Organization][]
+    
+
+
+# Group Buildings
+Buildings are the physical structures that contain meters and other data sources.
+
+### Fields
+
+|          Name         |                                                       Description                                                        | Returns  |
+|-----------------------|--------------------------------------------------------------------------------------------------------------------------|----------|
+| `id`                  | The unique id for the building                                                                                           | `string` |
+| `object`              | The type of object returned                                                                                              | `string` |
+| `url`                 | The URL to this resource in the API                                                                                      | `string` |
+| `name`                | Building full name                                                                                                       | `string` |
+| `short_name`          | A shortened version of the building name                                                                                 | `string` |
+| `description`         | A text description of the building                                                                                       | `string` |
+| `address`             | Postal address of the building                                                                                           | `string` |
+| `postal_code`         | Postal (aka Zipcode) of the building                                                                                     | `string` |
+| `location`            | -- A location object with lat/lon                                                                                        | `object` |
+| `location`.`lat`      |    Geo location (latitude) of the building                                                                               | `string` |
+| `location`.`lon`      |    Geo location (longitude) of the building                                                                              | `string` |
+| `updated_at`          | The timestamp when this record was last modified                                                                         | `string  |
+| `organization`        | URL to the parent organization for this Building                                                                         | `string` |
+| `meters`              | List of meters which capture measurements for this building                                                              | `array`  |
+| `image`               | Primary image to display for this resource                                                                               | `string` |
+|                       |                                                                                                                          |          |
+
+## Building List [/buildings?ids={ids}&per_page={per_page}&page={page}&organization_id={organization_id}]
+A list of buildings that the current user has access to view/read
+
++ Model (application/json)
+
+    + Body
+
+            {
+                "total_count": 22,
+                "data": [
+                  {
+                      "id": "3857",
+                      "object": "building",
+                      "url": "https://api.buildingos.com/buildings/3857",
+                      "name": " Cogeneration Plant",
+                      "short_name": "Cogen",
+                      "description": "Cogen Plant that powers the campus",
+                      "address": "123 Power ln",
+                      "postal_code": "94607",
+                      "location": {
+                          "lat": 37.8134665,
+                          "lon": -122.307947
+                      },
+                      "updated_at": "2012-11-19T15:30:46-05:00",
+                      "organization": "https://api.buildingos.com/organizations/38",
+                      "meters": [
+                          "https://api.buildingos.com/meters/cogen_electricity_prod",
+                          "https://api.buildingos.com/meters/cogen_steam"
+                      ],
+                      "image": "https://api.buildingos.com/buildings/3857/image"
+                  },
+                  {
+                      "id": "11685",
+                      "object": "building",
+                      "url": "https://api.buildingos.com/buildings/11685",
+                      "name": "Capital Center",
+                      "short_name": "CapCen",
+                      "description": "The performing arts building",
+                      "address": "322 Main Street",
+                      "postal_code": "94607",
+                      "location": {
+                          "lat": 37.8134665,
+                          "lon": -122.307947
+                      },
+                      "updated_at": "2015-03-13T08:51:26-07:00",
+                      "organization": "https://api.buildingos.com/organizations/1437",
+                      "meters": [
+                          "https://api.buildingos.com/meters/0b19a394c91211e4ab5952540033333"
+                      ],
+                      "image": "https://api.buildingos.com/buildings/11685/image"
+                  },
+                  {
+                      "id": "11681",
+                      "object": "building",
+                      "url": "https://api.buildingos.com/buildings/11681",
+                      "name": "Student Dorm Building",
+                      "short_name": "Student Dorms",
+                      "description": "The student dorm building",
+                      "address": "10 Study Street",
+                      "postal_code": "94607",
+                      "location": {
+                          "lat": 37.8134665,
+                          "lon": -122.307947
+                      },
+                      "updated_at": "2015-03-12T15:53:01-04:00",
+                      "organization": "https://api.buildingos.com/organizations/1423",
+                      "meters": [
+                          "https://api.buildingos.com/meters/bc1e7ea0c8f211e49348525400e84168"
+                      ],
+                      "image": "https://api.buildingos.com/buildings/11681/image"
+                  }
+                ],
+            "links": {
+                "previous": null,
+                "next": "https://api.buildingos.com/buildings/?per_page=3&page=2"
+            }
+            
+## Building List [GET]
+    
++ Parameters
+    + per_page (optional, number, `10`) ... The number of items to return
+    + page (optional, number, `0`) ... The number of records to skip before returning data
+    
++ Request (application/json)
+    
+    + Header
+    
+            Authorization: Bearer <user_auth_token>
+    
++ Response 200
+
+    [Building List][]
+
+## Building [/buildings/{id}]
+A single Building resource
+
++ Model (application/json)
+
+    + Body
+    
+            {
+                "meta": null,
+                "data": {
+                    "id": "11685",
+                    "object": "building",
+                    "url": "https://api.buildingos.com/buildings/11685",
+                    "name": "Capital Center",
+                    "short_name": "CapCen",
+                    "description": "The performing arts building",
+                    "address": "94607",
+                    "postal_code": "94607",
+                    "location": {
+                        "lat": 37.8134665,
+                        "lon": -122.307947
+                    },
+                    "updated_at": "2015-03-13T08:51:26-07:00",
+                    "organization": "https://api.buildingos.com/organizations/1437",
+                    "meters": [
+                        "https://api.buildingos.com/meters/0b19a394c91211e4ab5952540033333"
+                    ],
+                    "image": "https://api.buildingos.com/buildings/11685/image"
+                }
+            }
+              
+## Get a Building [GET]
+Returns a single building object
+
++ Parameters
+    + id (required, String, `123`) ... `id` of the building.
+
++ Request (application/json)
+    
+    + Header
+            
+            Authorization: Bearer <user_auth_token>
+
++ Response 200
+
+    [Building][]
+
+# Group Meters
+Meters capture all the data about a buildings resource usage. Meters have service types which define how we get the data if there is a service and gateways define how we get the data if there is a intermediate device.
+
+### Fields
+|               Name                 |                              Description                              |  Returns  |
+|------------------------------------|-----------------------------------------------------------------------|-----------|
+| `uuid`                             | A unique id for the meter. We only use uuids here                     | `string`  |
+| `url`                              | The url to this object                                                | `string`  |
+| `name`                             | The display name for the meter. Probably auto-generated               | `string`  |
+| `scope`                            | The scope of the resource being monitored in parent building          | `object`  |
+| `scope`.`id`                       | -- The id of the scope object                                         | `string`  |
+| `scope`.`displayName`              | -- The human readable name of the scope                               | `string`  |
+| `scope`.`slug`                     | -- The url friendly version of the scope name                         | `string`  |
+| `building`                         | The URL to the parent building object                                 | `string`  |
+| `status`                           | The status of the meter                                               | `object`  |
+| `status`.`id`                      | -- The ID of the object                                               | `string`  |
+| `status`.`slug`                    | -- A URL friendly version of the object name                          | `string`  |
+| `status`.`displayName`             | -- A human readable version of the object name                        | `string`  |
+| `resource_type`                    | The resource type designated for this meter                           | `object`  |
+| `resource_type`.`id`               | -- The ID of the object                                               | `string`  |
+| `resource_type`.`slug`             | -- A URL friendly version of the object name                          | `string`  |
+| `resource_type`.`displayName`      | -- A human readable version of the object name                        | `string`  |
+| `reading_type`                     | The reading type for this meter                                       | `object`  |
+| `reading_type`.`id`                | -- The ID of the object                                               | `string`  |
+| `reading_type`.`displayName`       | -- A human readable version of the object name                        | `string`  |
+| `source_units`                     | The unit type from the source meter system                            | `object`  |
+| `source_units`.`id`                | -- The ID of the object                                               | `string`  |
+| `source_units`.`displayName`       | -- A human readable version of the unit name                          | `string`  |
+| `display_units`                    | The unit type to use for displaying the meter                         | `object`  |
+| `display_units`.`id`               | -- The ID of the object                                               | `string`  |
+| `display_units`.`displayName`      | -- A human readable version of the unit name                          | `string`  |
+| `default_timescale`                | The default time scale to use when displaying this meter              | `object`  |
+| `default_timescale`.`id`           | -- The ID of the object                                               | `string`  |
+| `default_timescale`.`slug`         | -- A URL friendly version of the timescale name                       | `string`  |
+| `tags`                             | A collection of strings that classify the meter                       | `array`   |
+| `integration`                      | The type of integration used to get this meter data                   | `object`  |
+| `integration`.`id`                 | -- The ID of the object                                               | `string`  |
+| `integration`.`displayName`        | -- A human readable version of the integration name                   | `string`  |
+| `first_reading_at`                 | RFC 3339 timestamp of the first metere reading                        | `string`  |
+| `latest_reading_at`                | RFC 3339 timestamp for the most recent reading                        | `string`  |
+| `flatline_threshold`               | An object that stores the service that this meter uses                | `object`  |
+| `flatline_threshold`.`id`          | -- The ID of the object                                               | `string`  |
+| `flatline_threshold`.`displayName` | -- A human readable version of the object name                        | `string`  |
+| `data`                             | A url to the readings for the meter, the data                         | `string`  |
+| `current_rate`                     | The type of units used, probably kW (kiloWatts)                       | `object`  |
+| `current_rate`.'value'             | -- The current utility rate per kW/hr                                 | `string`  |
+
+## Meter List [/meters?ids={ids}&per_page={per_page}&page={page}]
+### List of meters accessible by a given user [GET]
+
++ Parameters
+    + ids (optional, string, `12,30,102`) ... `id`s of the Meters to return
+    + per_page (optional, number, `10`) ... The number of items to return
+    + page (optional, number, `0`) ... The number of records to skip before returning data
+    
++ Request (application/json)
+    
+    + Header
+    
+            Authorization: Bearer <user_auth_token>
+            
+    
++ Response 200 (application/json)
+
+    + Body
+
+            {
+                "total_count": 3,
+                "meta": {
+                    "definitions": {
+                        "status": "https://api.buildingos.com/definitions/status",
+                        "source_units": "https://api.buildingos.com/definitions/source_unit",
+                        "flatline_threshold": "https://api.buildingos.com/definitions/flatline_threshold",
+                        "reading_type": "https://api.buildingos.com/definitions/reading_type",
+                        "default_timescale": "https://api.buildingos.com/definitions/default_timescale",
+                        "display_units": "https://api.buildingos.com/definitions/display_unit",
+                        "scope": "https://api.buildingos.com/definitions/scope",
+                        "resource_type": "https://api.buildingos.com/definitions/resource_type"
+                    }
+                },
+                "data": [
+                    {
+                        "uuid": "7a55435cecf411e4b54c525400ec2e3e",
+                        "url": "https://api.buildingos.com/meters/7a55435cecf411e4b54c525400ec2e3e",
+                        "name": "regressiontestorg_building1floors4area4000occupancy40_electricity_submeter_floor1submtr1electricityintervalconsumptionkwh15mininc10",
+                        "scope": {
+                            "displayName": "Sub-meter",
+                            "id": 32,
+                            "slug": "submeter"
+                        },
+                        "building": "https://api.buildingos.com/buildings/12000",
+                        "status": {
+                            "displayName": "Offline",
+                            "id": 1,
+                            "slug": "offline"
+                        },
+                        "resource_type": {
+                            "displayName": "Electricity",
+                            "id": 1,
+                            "slug": "electricity"
+                        },
+                        "reading_type": {
+                            "displayName": "Interval Consumption",
+                            "id": 3
+                        },
+                        "source_units": {
+                            "displayName": "Kilowatt-hours",
+                            "id": 43
+                        },
+                        "display_units": {
+                            "displayName": "Kilowatts",
+                            "id": 1
+                        },
+                        "default_timescale": {
+                            "id": 8,
+                            "slug": "lastyear"
+                        },
+                        "tags": [
+                            "electricity_meter",
+                            "sub_meter_meter",
+                            "office_building",
+                            "buildingos_csv_meter"
+                        ],
+                        "integration": {
+                            "display_name": "BuildingOS CSV",
+                            "id": 53
+                        },
+                        "first_reading_at": "2014-01-01T00:15:00-08:00",
+                        "latest_reading_at": "2015-05-31T01:00:00-07:00",
+                        "flatline_threshold": {
+                            "displayName": "Disabled",
+                            "id": 0
+                        },
+                        "data": "https://api.buildingos.com/meters/7a55435cecf411e4b54c525400ec2e3e/data",
+                        "current_rate": {
+                            "value": 0.13
+                        }
+                    },
+                    {
+                        "uuid": "ecf79566ff6b11e4a6f35254006a6386",
+                        "url": "https://api.buildingos.com/meters/ecf79566ff6b11e4a6f35254006a6386",
+                        "name": "regressiontestorg_building1floors4area4000occupancy40_electricity_submeter_floor2submtr1electricityintervalconsumptionkwh15mininc15",
+                        "scope": {
+                            "displayName": "Sub-meter",
+                            "id": 32,
+                            "slug": "submeter"
+                        },
+                        "building": "https://api.buildingos.com/buildings/12000",
+                        "status": {
+                            "displayName": "Offline",
+                            "id": 1,
+                            "slug": "offline"
+                        },
+                        "resource_type": {
+                            "displayName": "Electricity",
+                            "id": 1,
+                            "slug": "electricity"
+                        },
+                        "reading_type": {
+                            "displayName": "Interval Consumption",
+                            "id": 3
+                        },
+                        "source_units": {
+                            "displayName": "Kilowatt-hours",
+                            "id": 43
+                        },
+                        "display_units": {
+                            "displayName": "Kilowatts",
+                            "id": 1
+                        },
+                        "default_timescale": {
+                            "id": 18,
+                            "slug": "last12months"
+                        },
+                        "tags": [
+                            "electricity_meter",
+                            "sub_meter_meter",
+                            "office_building",
+                            "buildingos_csv_meter"
+                        ],
+                        "integration": {
+                            "display_name": "BuildingOS CSV",
+                            "id": 53
+                        },
+                        "first_reading_at": "2014-01-01T00:15:00-08:00",
+                        "latest_reading_at": "2015-03-31T01:00:00-07:00",
+                        "flatline_threshold": {
+                            "displayName": "Disabled",
+                            "id": 0
+                        },
+                        "data": "https://api.buildingos.com/meters/ecf79566ff6b11e4a6f35254006a6386/data",
+                        "current_rate": {
+                            "value": 0.13
+                        }
+                    },
+                    {
+                        "uuid": "680ee904ffc411e4957d5254009e602c",
+                        "url": "https://api.buildingos.com/meters/680ee904ffc411e4957d5254009e602c",
+                        "name": "regressiontestorg_building1floors4area4000occupancy40_electricity_wholebuilding_building1wholemeterelectricity",
+                        "scope": {
+                            "displayName": "Whole building",
+                            "id": 0,
+                            "slug": "wholeBuilding"
+                        },
+                        "building": "https://api.buildingos.com/buildings/12000",
+                        "status": {
+                            "displayName": "Calculated",
+                            "id": 6,
+                            "slug": "derived"
+                        },
+                        "resource_type": {
+                            "displayName": "Electricity",
+                            "id": 1,
+                            "slug": "electricity"
+                        },
+                        "reading_type": {
+                            "displayName": "Interval Demand",
+                            "id": 0
+                        },
+                        "source_units": null,
+                        "display_units": {
+                            "displayName": "Kilowatts",
+                            "id": 1
+                        },
+                        "default_timescale": {
+                            "id": 18,
+                            "slug": "last12months"
+                        },
+                        "tags": [
+                            "electricity_meter",
+                            "whole_building_meter",
+                            "office_building",
+                            "derived_meter"
+                        ],
+                        "integration": {
+                            "display_name": "Calculated Meter",
+                            "id": 9999
+                        },
+                        "first_reading_at": "2014-01-01T00:30:00-08:00",
+                        "latest_reading_at": "2015-03-31T01:00:00-07:00",
+                        "flatline_threshold": null,
+                        "data": "https://api.buildingos.com/meters/680ee904ffc411e4957d5254009e602c/data",
+                        "current_rate": {
+                            "value": 0.13
+                        }
+                    }
+                ],
+                "links": {
+                    "previous": null,
+                    "next": null
+                }
+            }
+
+## Meter [/meters/{id}]
+### A particular meter for a given ID [GET]
+
++ Request (application/json)
+    
+    + Header
+    
+            Authorization: Bearer <user_auth_token>
+
++ Parameters
+    + id (required, string, `223`) ... `id` of the meter.
+    
++ Response 200 (application/json)
+
+    + Body
+
+            {
+                "meta": {
+                    "definitions": {
+                        "status": "https://api.buildingos.com/definitions/status",
+                        "source_units": "https://api.buildingos.com/definitions/source_unit",
+                        "flatline_threshold": "https://api.buildingos.com/definitions/flatline_threshold",
+                        "reading_type": "https://api.buildingos.com/definitions/reading_type",
+                        "default_timescale": "https://api.buildingos.com/definitions/default_timescale",
+                        "display_units": "https://api.buildingos.com/definitions/display_unit",
+                        "scope": "https://api.buildingos.com/definitions/scope",
+                        "resource_type": "https://api.buildingos.com/definitions/resource_type"
+                    }
+                },
+                "data": {
+                    "uuid": "1153895_utility_2435571_electricity",
+                    "url": "https://api.buildingos.com/meters/1153895_utility_2435571_electricity",
+                    "name": "1153895_utility_2435571_electricity",
+                    "scope": {
+                        "displayName": "Composite",
+                        "id": 24,
+                        "slug": "composite"
+                    },
+                    "building": "https://api.buildingos.com/buildings/3395",
+                    "status": {
+                        "displayName": "Disabled",
+                        "id": 4,
+                        "slug": "disabled"
+                    },
+                    "resource_type": {
+                        "displayName": "Electricity",
+                        "id": 1,
+                        "slug": "electricity"
+                    },
+                    "reading_type": {
+                        "displayName": "Interval Demand",
+                        "id": 0
+                    },
+                    "source_units": {
+                        "displayName": "Kilowatts",
+                        "id": 1
+                    },
+                    "display_units": {
+                        "displayName": "Kilowatts",
+                        "id": 1
+                    },
+                    "default_timescale": {
+                        "id": 8,
+                        "slug": "lastyear"
+                    },
+                    "tags": [
+                        "electricity_meter",
+                        "composite_meter",
+                        "other_building",
+                        "other_data_service_meter"
+                    ],
+                    "integration": {
+                        "display_name": "Other",
+                        "id": 34
+                    },
+                    "first_reading_at": "2007-12-20T00:00:00-08:00",
+                    "latest_reading_at": "2013-01-07T00:00:00-08:00",
+                    "flatline_threshold": {
+                        "displayName": "Disabled",
+                        "id": 0
+                    },
+                    "data": "https://api.buildingos.com/meters/1153895_utility_2435571_electricity/data",
+                    "current_rate": {
+                        "value": 0.07
+                    }
+                }
+            }
+
+## Meter Data [/meters/{id}/data?start={?start}&end={?end}&limit={?limit}&order={?order}&resolution={?resolution}]
+### A particular meter for a given id [GET]
+
++ Request (application/json)
+    
+    + Header
+    
+            Authorization: Bearer <user_auth_token>
+
++ Parameters
+    + id (required, string, `223`) ... `id` of the meter.
+    + start (optional, timestamps, `YYYY-MM-DD`) ... If 'start' is included, 'end' is required.
+    + end (optional, timestamps, `YYYY-MM-DD`) ... If 'start' is included, 'end' is required.
+    + order (optional, 'asc' or 'desc') ... Default is 'desc' (most recent date at the top of the list)
+    + resolution (optional, TimeResolution enum value) ... The resolution to use for the data set. Can be 'month', 'day', 'hour', . Default: 'month'. 
+    + limit (optional, number) ... Number of items to return in this page of data. Default: 200, Max: 200
+           
+    
++ Response 200 (application/json)
+
+    + Body
+            
+            {
+                "meta": {
+                    "units": {
+                        "value": {
+                            "id": "8",
+                            "displayName": "Cubic feet / hour",
+                            "shortName": "ft^3/hour"
+                        }
+                    },
+                    "definitions": {
+                        "resolution": "https://api.buildingos.com/definitions/resolution",
+                        "units.value": "https://api.buildingos.com/definitions/display_unit",
+                        "units.cost": "https://api.buildingos.com/definitions/currency"
+                    },
+                    "resolution": {
+                        "displayName": "Month",
+                        "slug": "month",
+                        "id": 3
+                    }
+                },
+                "data": [
+                    {
+                        "value": 611.41162,
+                        "localtime": "2007-12-01T00:00:00-08:00"
+                    },
+                    {
+                        "value": 501.717,
+                        "localtime": "2008-01-01T00:00:00-08:00"
+                    },
+                    {
+                        "value": 392.60723,
+                        "localtime": "2008-02-01T00:00:00-08:00"
+                    },
+                    {
+                        "value": 596.96297,
+                        "localtime": "2008-03-01T00:00:00-08:00"
+                    },
+                    {
+                        "value": 558.6894,
+                        "localtime": "2008-04-01T00:00:00-07:00"
+                    },
+                    {
+                        "value": 382.12793,
+                        "localtime": "2008-05-01T00:00:00-07:00"
+                    },
+                    {
+                        "value": 423.76302,
+                        "localtime": "2008-06-01T00:00:00-07:00"
+                    },
+                    {
+                        "value": 385.20222,
+                        "localtime": "2008-07-01T00:00:00-07:00"
+                    },
+                    {
+                        "value": 373.83864,
+                        "localtime": "2008-08-01T00:00:00-07:00"
+                    },
+                    {
+                        "value": 169.14126,
+                        "localtime": "2008-09-01T00:00:00-07:00"
+                    },
+                    {
+                        "value": 147.04007,
+                        "localtime": "2008-10-01T00:00:00-07:00"
+                    },
+                    {
+                        "value": 453.91718,
+                        "localtime": "2008-11-01T00:00:00-07:00"
+                    },
+                    {
+                        "value": 140.72361,
+                        "localtime": "2008-12-01T00:00:00-08:00"
+                    },
+                    {
+                        "value": 164.9732,
+                        "localtime": "2009-01-01T00:00:00-08:00"
+                    },
+                    {
+                        "value": 237.52957,
+                        "localtime": "2009-02-01T00:00:00-08:00"
+                    },
+                    {
+                        "value": 324.27976,
+                        "localtime": "2009-03-01T00:00:00-08:00"
+                    },
+                    {
+                        "value": 249.24579,
+                        "localtime": "2009-04-01T00:00:00-07:00"
+                    },
+                    {
+                        "value": 282.09981,
+                        "localtime": "2009-05-01T00:00:00-07:00"
+                    },
+                    {
+                        "value": 250.21854,
+                        "localtime": "2009-06-01T00:00:00-07:00"
+                    },
+                    {
+                        "value": 275.95424,
+                        "localtime": "2009-07-01T00:00:00-07:00"
+                    },
+                    {
+                        "value": 268.34444,
+                        "localtime": "2009-08-01T00:00:00-07:00"
+                    },
+                    {
+                        "value": 350.86492,
+                        "localtime": "2009-09-01T00:00:00-07:00"
+                    },
+                    {
+                        "value": 495.67308,
+                        "localtime": "2009-10-01T00:00:00-07:00"
+                    },
+                    {
+                        "value": 767.83865,
+                        "localtime": "2009-11-01T00:00:00-07:00"
+                    },
+                    {
+                        "value": 643.90505,
+                        "localtime": "2009-12-01T00:00:00-08:00"
+                    },
+                    {
+                        "value": 461.70198,
+                        "localtime": "2010-01-01T00:00:00-08:00"
+                    },
+                    {
+                        "value": 419.0254,
+                        "localtime": "2010-02-01T00:00:00-08:00"
+                    },
+                    {
+                        "value": 554.35414,
+                        "localtime": "2010-03-01T00:00:00-08:00"
+                    },
+                    {
+                        "value": 407.31328,
+                        "localtime": "2010-04-01T00:00:00-07:00"
+                    },
+                    {
+                        "value": 327.61798,
+                        "localtime": "2010-05-01T00:00:00-07:00"
+                    },
+                    {
+                        "value": 314.2672,
+                        "localtime": "2010-06-01T00:00:00-07:00"
+                    },
+                    {
+                        "value": 127.51532,
+                        "localtime": "2010-07-01T00:00:00-07:00"
+                    },
+                    {
+                        "value": 175.24617,
+                        "localtime": "2010-08-01T00:00:00-07:00"
+                    },
+                    {
+                        "value": 238.73666,
+                        "localtime": "2010-09-01T00:00:00-07:00"
+                    },
+                    {
+                        "value": 375.08957,
+                        "localtime": "2010-10-01T00:00:00-07:00"
+                    },
+                    {
+                        "value": 682.69866,
+                        "localtime": "2010-11-01T00:00:00-07:00"
+                    },
+                    {
+                        "value": 585.68978,
+                        "localtime": "2010-12-01T00:00:00-08:00"
+                    },
+                    {
+                        "value": 437.21989,
+                        "localtime": "2011-01-01T00:00:00-08:00"
+                    },
+                    {
+                        "value": 431.4224,
+                        "localtime": "2011-02-01T00:00:00-08:00"
+                    },
+                    {
+                        "value": 436.81652,
+                        "localtime": "2011-03-01T00:00:00-08:00"
+                    },
+                    {
+                        "value": 401.75561,
+                        "localtime": "2011-04-01T00:00:00-07:00"
+                    },
+                    {
+                        "value": 246.52643,
+                        "localtime": "2011-05-01T00:00:00-07:00"
+                    },
+                    {
+                        "value": 306.57506,
+                        "localtime": "2011-06-01T00:00:00-07:00"
+                    },
+                    {
+                        "value": 254.40693,
+                        "localtime": "2011-07-01T00:00:00-07:00"
+                    },
+                    {
+                        "value": 200.6401,
+                        "localtime": "2011-08-01T00:00:00-07:00"
+                    },
+                    {
+                        "value": 229.50539,
+                        "localtime": "2011-09-01T00:00:00-07:00"
+                    },
+                    {
+                        "value": 323.42124,
+                        "localtime": "2011-10-01T00:00:00-07:00"
+                    },
+                    {
+                        "value": 672.80195,
+                        "localtime": "2011-11-01T00:00:00-07:00"
+                    },
+                    {
+                        "value": 514.89263,
+                        "localtime": "2011-12-01T00:00:00-08:00"
+                    },
+                    {
+                        "value": 509.15816,
+                        "localtime": "2012-01-01T00:00:00-08:00"
+                    },
+                    {
+                        "value": 500.11856,
+                        "localtime": "2012-02-01T00:00:00-08:00"
+                    },
+                    {
+                        "value": 57.91713,
+                        "localtime": "2012-03-01T00:00:00-08:00"
+                    },
+                    {
+                        "value": 11.51017,
+                        "localtime": "2012-04-01T00:00:00-07:00"
+                    },
+                    {
+                        "value": 9.79953,
+                        "localtime": "2012-05-01T00:00:00-07:00"
+                    },
+                    {
+                        "value": 8.83037,
+                        "localtime": "2012-06-01T00:00:00-07:00"
+                    },
+                    {
+                        "value": 3.82657,
+                        "localtime": "2012-07-01T00:00:00-07:00"
+                    },
+                    {
+                        "value": 4.66473,
+                        "localtime": "2012-08-01T00:00:00-07:00"
+                    },
+                    {
+                        "value": 4.86511,
+                        "localtime": "2012-09-01T00:00:00-07:00"
+                    },
+                    {
+                        "value": 7.00407,
+                        "localtime": "2012-10-01T00:00:00-07:00"
+                    },
+                    {
+                        "value": 11.02749,
+                        "localtime": "2012-11-01T00:00:00-07:00"
+                    },
+                    {
+                        "value": 13.69636,
+                        "localtime": "2012-12-01T00:00:00-08:00"
+                    },
+                    {
+                        "value": 1375.96403,
+                        "localtime": "2013-01-01T00:00:00-08:00"
+                    }
+                ],
+                "links": {
+                    "next": null,
+                    "previous": null
+                }
+            }
+
+
+# Group Notifications
+A notification in BuildingOS, mostly online/offline/flatline of meters
+
+### Fields
+
+Name                    | Description                                                                                       |  Returns
+----------------------- | ------------------------------------------------------------------------------------------------- | --------
+`verb`                  | The verb "action" of what happened, offline, flatline, etc...                                     | `string`
+`occurred_at`           | The RFC 3339 timestamp when the notifitation was created                                          | `string`
+`recoverd_at`           | The RFC 3339 timestamp of when the object recovered                                               | `string`
+`object_url`            | The URL to the object that is the source of the notification                                      | `string`
+
+## Notifications List [/notifications?per_page={per_page}&page={page}]
+
++ Parameters
+    + per_page (optional, number, `10`) ... Numeric per_page to the number of records to return. Default is 100.
+    + page (optional, number, `100`) ... For pagination support. Default value is 0.
+
++ Model (application/json)
+
+    + Body
+    
+            {
+                "total_count": 93,
+                "meta": {
+                    "definitions": {
+                        "verb": "https://api.buildingos.com/definitions/verb"
+                    }
+                },
+                "data": [
+                    {
+                        "verb": "offline",
+                        "occurred_at": "2015-05-04T17:10:00+00:00",
+                        "recovered_at": "2015-05-05T19:30:00+00:00",
+                        "object_url": "https://api.buildingos.com/meters/40260"
+                    },
+                    {
+                        "verb": "offline",
+                        "occurred_at": "2015-04-13T06:05:00+00:00",
+                        "recovered_at": "2015-04-14T02:00:00+00:00",
+                        "object_url": "https://api.buildingos.com/meters/40260"
+                    },
+                    {
+                        "verb": "offline",
+                        "occurred_at": "2014-12-08T07:00:00+00:00",
+                        "recovered_at": null,
+                        "object_url": "https://api.buildingos.com/meters/35180"
+                    },
+                    {
+                        "verb": "offline",
+                        "occurred_at": "2014-12-07T08:00:00+00:00",
+                        "recovered_at": null,
+                        "object_url": "https://api.buildingos.com/meters/35181"
+                    }
+                ],
+                "links": {
+                    "previous": null,
+                    "next": "https://api.buildingos.com/notifications?page=2"
+                }
+            }
+        
+### Notifications List [GET]
++ Request (application/json)
+ 
+    + Headers
+    
+            Authorization: Bearer <user_auth_token>
+
++ Response 200
+
+    [Notifications List][]
+
