@@ -132,10 +132,7 @@ curl -v -X GET -L -H "Authorization: Bearer <ACCESS_TOKEN>" https://api.building
 
 # HTTP Response Codes
 
-- `200` - OK - Everything is working
-- `201` - OK - New resource has been created
-- `202` - OK - Accepted for processing but processing not completed (for async processes such as report generation or data export requests)
-- `204` - OK - The resource was successfully deleted
+- `200` - OK - Everything is swell 
 - `206` - OK - The resource was partially updated 
 
 - `301` - Permanent Redirect - The resource has moved permanently 
@@ -147,7 +144,7 @@ curl -v -X GET -L -H "Authorization: Bearer <ACCESS_TOKEN>" https://api.building
 - `404` - Not found - There is no resource behind the URI.
 - `422` - Unprocessable Entity - Should be used if the server cannot process the entity, e.g. if an image cannot be formatted or mandatory fields are missing in the payload.
 
-- `500` - Internal Server Error - Something went really wrong. We will be auto-notified of the error and will look into it.
+- `500` - Internal Server Error - Something went really wrong.
 
 # On Nulls or Empty lists
 Sometimes it is confusing what types of things to return when data is missing or not applicable. Here's our convention for returning empty things and nulls (based on this https://jtechies.blogspot.nl/2012/07/item-43-return-empty-arrays-or.html)
