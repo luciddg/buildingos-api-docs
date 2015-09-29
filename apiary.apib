@@ -18,6 +18,8 @@ To get a BuildingOS account you will have to [contact our sales team](https://ww
 If you already have account, you will need to have the ability to login to BuildingOS and have 'Admin' level access.
 
 ### Creating your API client
+In order to make requests on behalf of a user, the client needs to be authorized by the user. All clients must use OAuth2.0 to connect with BOS on behalf of a BOS user. To register a new client, login to BOS and navigate to the API app. In this area of BuildingOS you will be able to view/update/delete API clients. You can create as many clients as you like. We recommend you create at least two, one for "production" and one for "development". You will need to name the client, provide a description and contact email. These will be presented to the user during the authorization flow. Once created, the BOS system will generate a clientID and secret to use during your applications authorization process.
+
 Since the API is still in beta, there is no way to directly link to the OAuth client creation pages. 
 To register your OAuth client first log in to your account and then copy and paste this to the browser URL [https://api.buildingos.com/o/applications](https://api.buildingos.com/o/applications)
 Click the "New Application" button to create your OAuth client.
@@ -30,44 +32,45 @@ Each client will get an auto-generated client id and client secret. These are th
 
 #### Client type
 Select the Client type you would like to use. Your options are 'Confidential' and 'Public'. 
-Choose 'Confidential' if you intend to protect the client id and secret. This is typically the case if you are running an app where the client id/secret is never shared with the end user (like in a server based website). 
-Choose 'Public' if this client id/secret will be used in code available to the end user. This is typically the case if you are building a mobile app or a browser only-js app. 
+
+* Choose 'Confidential' if you intend to protect the client id and secret. This is typically the case if you are running an app where the client id/secret is never shared with the end user (like in a server based website). 
+* Choose 'Public' if this client id/secret will be used in code available to the end user. This is typically the case if you are building a mobile app or a browser only-js app. 
 
 #### Grant type
 Grant type determines how the server responds to system calls from your app. 
-'Authorization Code' - Choose this 95% of the time. This is the standard 3-legged Oauth2.0 flow
-'Implicit' - Don't choose this, we do not support this. 
-'Resource owner password-based' - Choose this if you want a simple 'password' based flow. One request will return an auth token but you need to provide the clientId/clientSecret/userName/userPassword
-'Client Credentials' - Don't choose this, not supported yet.
+
+* 'Authorization Code' - Choose this 95% of the time. This is the standard 3-legged Oauth2.0 flow
+* 'Implicit' - Don't choose this, we do not support this. 
+* 'Resource owner password-based' - Choose this if you want a simple 'password' based flow. One request will return an auth token but you need to provide the clientId/clientSecret/userName/userPassword
+* 'Client Credentials' - Don't choose this, not supported yet.
 
 #### Redirect URIS
 This is the list of URLs where buildingOS will allow redirects to (newline separated). If you choose 'Authorization Code' as the grant type BuildingOS will redirect the end-user back to whatever URL you specify in the redirect_url param. We first check what you provide in the url param with available urls in this list. 
-Examples: 
-https://www.myapp.com/oauth/callback
-http://localhost:3000/oauth/callback
 
-## Key OAuth2.0 URLs
-NOTE: All requests must be over HTTPS!
+Example: 
+  
+        https://www.myapp.com/oauth/callback
+        http://localhost:3000/oauth/callback
+
+## Key OAuth2.0 URLs 
+## !!NOTE: All requests must be over HTTPS!!
 
 To request your access granting code
-`https://api.buildingos.com/o/authorize/`
+        
+    https://api.buildingos.com/o/authorize/
 
 To request your access token using your code
-`https://api.buildingos.com/o/token/`
+
+    https://api.buildingos.com/o/token/
 
 To refresh your access token using the returned refresh token
-`https://api.buildingos.com/o/refresh/`
+
+    https://api.buildingos.com/o/refresh/
 
 ### Example
 Here's an example of a client with the 'password' type grant type. You can request an oauth token with one request using the URL below. Executed using the command line program 'curl'
 
     curl -X POST -d "client_id=CLIENT_ID&client_secret=CLIENT_SECRET&username=USERNAME&password=PASSWORD&grant_type=password" https://api.buildingos.com/o/token/`
-
-## OAuth2.0 access tokens 
-
-In order to make requests on behalf of a user, the client needs to be authorized by the user. All clients must use OAuth2.0 to connect with BOS on behalf of a BOS user. To register a new client, login to BOS and navigate to the API app. In this area of BuildingOS you will be able to view/update/delete API clients. You can create as many clients as you like. We recommend you create at least two, one for "production" and one for "development". You will need to name the client, provide a description and contact email. These will be presented to the user during the authorization flow. Once created, the BOS system will generate a clientID and secret to use during your applications authorization process.
-
-
 
 ## Authorization Token Expiration
 A user's authorization token key has a short lifetime. Each token only lasts one hour. A user's authorization token can be revoked either by the user or a system administrator. A client consuming the API would need to be prepared to support the use case of an authorization token expiring or being revoked. It should handle re-requesting access using the refresh token provided alongside the access token.
