@@ -28,7 +28,7 @@ Each client you create will need a name. Typically, if you are developing an app
 We will generate a Client Id and Client Secret you will use for in your application.
 
 Choose the type of Client type you would like to use. Your options are 'Confidential' and 'Public'. 
-Chose 'Confidential' if you intend to protect the client id and secret. This is typically the case if you are running an app where the client ID/secret is never shared with the end user (like in a serer based website). 
+Chose 'Confidential' if you intend to protect the client id and secret. This is typically the case if you are running an app where the client ID/secret is never shared with the end user (like in a server based website). 
 Choose 'Public' if this client id/secret will be used in code available to the end user. This is typically the case if you are building a mobile app or a browser only-js app. 
 
 ### Grant types
@@ -39,7 +39,7 @@ Grant type determines how the server responds to system calls from your app.
 'Client Credentials' - Don't choose this, not supported yet.
 
 ### Redirect URIS
-This is the list of URLs where buildingOS will allow redirects to (newline separated). If you choose 'Authorization Code' as the grant type BuildingOS will redirect the end-user back to whatever URL you secifiy in the redirect_url param. We first check what you provide in the url param with available urls in this list. 
+This is the list of URLs where buildingOS will allow redirects to (newline separated). If you choose 'Authorization Code' as the grant type BuildingOS will redirect the end-user back to whatever URL you specify in the redirect_url param. We first check what you provide in the url param with available urls in this list. 
 Examples: 
 https://www.myapp.com/oauth/callback
 http://localhost:3000/oauth/callback
@@ -62,7 +62,7 @@ Here's an example of a client with the 'password' type grant type. You can reque
 
 
 ## Authorization Token Expiration
-A user's authorization token key has a short lifetime. Each token only lasts one hour. A user's authorization token can be revoked either by the user or a system administrator. A client consuming the API would need to be prepared to support the use case of an authorization token expiring or being revoked. It should handle re-requesting access using the refresh token provided along side the access token.
+A user's authorization token key has a short lifetime. Each token only lasts one hour. A user's authorization token can be revoked either by the user or a system administrator. A client consuming the API would need to be prepared to support the use case of an authorization token expiring or being revoked. It should handle re-requesting access using the refresh token provided alongside the access token.
 
 # Response Object Format
 All objects returned from the API are in a data envelope. This means the object resource is not returned as the root of the json response object but rather, the object is wrapped in an enclosing object. This allows us to make changes to the response object to add additional meta data (if needed) as the API evolves. For most requests the response object will have these three attributes. Most singular resource requests (e.g. /meters/XYZ) will just have the 'data' attribute. Most collection requests will have 'data', 'links', and 'total_count'. (Note: `error` responses are different. See below for details...)
