@@ -199,6 +199,9 @@ curl -v -X GET -L -H "Authorization: Bearer <ACCESS_TOKEN>" https://api.building
 
 - `500` - Internal Server Error - Something went really wrong.
 
+# Rate Limits
+Our current rate limit is 1,000 requests per user per hour. If you exceed this number of requests in a hour the API will return a HTTP 429 error. 
+
 # On Nulls or Empty lists
 Sometimes it is confusing what types of things to return when data is missing or not applicable. Here's our convention for returning empty things and nulls (based on this https://jtechies.blogspot.nl/2012/07/item-43-return-empty-arrays-or.html)
 
