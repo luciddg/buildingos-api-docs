@@ -13,13 +13,16 @@ Please refer to the [formatting section](http://docs.buildingosapi.apiary.io/#in
 
 # Getting access 
 Access to the API has a few prerequisites. 
-1) A BuildingOS account and user login 
+1) A BuildingOS account and user login. 
 2) A registered OAuth2.0 client app in BuildingOS 
 3) An authorization token created with your registered OAuth2.0 client
 
 ## BuildingOS account
 To get a BuildingOS account you will have to [contact our sales team](https://www.lucidconnects.com/platform/buildingos)
 If you already have account, you will need to have the ability to login to BuildingOS and have 'Admin' level access.
+Permissions within BuildingOS are at the Organization level. As such, you will need access to the specific organization
+you are developing for. It is highly recommended that you do not use your personal BuildingOS user account. We 
+recommend you create an account specifically for use with our API. 
 
 # OAuth2.0
 
@@ -56,16 +59,13 @@ This is typically the case if you are building a mobile app or a browser only-js
 #### Grant type
 Grant type determines how the server responds to system calls from your app. 
 
-* 'Authorization Code' - Choose this 95% of the time. This is the standard 3-legged Oauth2.0 flow
-* 'Implicit' - Don't choose this, we do not support this. 
 * 'Resource owner password-based' - Choose this if you want a simple 'password' based flow. 
-One request will return an auth token but you need to provide the clientId/clientSecret/userName/userPassword
-* 'Client Credentials' - Don't choose this, not supported yet.
+One request will return an auth token but you need to provide the clientId/clientSecret/userName/userPassword.
+This is the only grant type we support because of the nature of BuildingOS and the organization associated
+Access Control Lists.
 
 #### Redirect URIS
 This is the list of URLs where buildingOS will allow redirects to (newline separated). 
-If you choose 'Authorization Code' as the grant type BuildingOS will redirect the end-user back to whatever URL you specify 
-in the redirect_url param. We first check what you provide in the url param with available urls in this list. 
 
 Example: 
   
@@ -92,7 +92,7 @@ Here's an example of a client with the 'password' type grant type.
 You can request an oauth token with one request using the URL below. 
 Executed using the command line program 'curl'
 
-    curl -X POST -d "client_id=CLIENT_ID&client_secret=CLIENT_SECRET&username=USERNAME&password=PASSWORD&grant_type=password" https://api.buildingos.com/o/token/`
+    curl -X POST -d "client_id=[CLIENT_ID]&client_secret=[CLIENT_SECRET]&username=[USERNAME]&password=[PASSWORD]&grant_type=password" https://api.buildingos.com/o/token/`
 
 ## Authorization Token Expiration
 A user's authorization token key has a short lifetime. Each token only lasts one hour. 
