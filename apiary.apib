@@ -880,8 +880,8 @@ Meters capture all the data about a buildings resource usage. Meters have servic
 | `flatlineThreshold`.`id`           | -- The ID of the object                                               | `string`  |
 | `flatlineThreshold`.`displayName`  | -- A human readable version of the object name                        | `string`  |
 | `data`                             | A url to the readings for the meter, the data                         | `string`  |
-| `currentRate`                      | The type of units used, probably kW (kiloWatts)                       | `object`  |
-| `currentRate`.'value'              | -- The current utility rate per kW/hr                                 | `string`  |
+| `currentRate`                      | Current utility price of this meter                                | `object`  |
+| `currentRate`.'value'              | -- The current utility price in $ / units                               | `string`  |
 
 ## Meter List [/meters?ids={ids}&perPage={perPage}&page={page}]
 ### List of meters accessible by a given user [GET]
